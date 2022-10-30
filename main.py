@@ -1,26 +1,33 @@
 import sys
-import math
-import psutil
 import requests
 from threading import Thread
 from rich.console import Console
 
-HOST = "https://worksn.com.br/"
-
 console = Console()
 
 def get_argument():
+  target_data = { "file": "", "host": "" }
+
   for index, arg in enumerate(sys.argv):
     if arg == "-lf":
       file = open(sys.argv[index + 1], "r")
       
-      return file
+      target_data["file"] = file
+    
+    if arg == "-t":
+      target = sys.argv[index + 1]
 
-def request_fuzzing(file):
+      target_data["host"] = target
+
+  return target_data
+
+
+def request_fuzzing(file, host):
   for index, item in enumerate(file):
     message = ""
-    with console.status("[bold green] Test on: " + HOST + item) as status:
-      request = requests.get(HOST + item)
+
+    with console.status("[bold green] Test on: " + host + item) as status:
+      request = requests.get(host + item)
       response_length = len(request.text)
 
       if request.status_code == 200 and response_length > 0:
@@ -33,10 +40,18 @@ def request_fuzzing(file):
       if(message != "Not found!"):
         console.log(request, message)
 
-def fuzzing(file):
-  threading = Thread(target=request_fuzzing, args=(file,)).start()
-  # threading = Thread(target=request_fuzzing, args=(file[0: int(len(file) / 2)],)).start()
-  # threading2 = Thread(target=request_fuzzing, args=(file[int((len(file) / 2) + 1): len(file) -1],)).start()
 
-file = get_argument()
-fuzzing(file.read().split('\n'))
+def fuzzing(file, host):
+  Thread(target=request_fuzzing, args=(file, host,)).start()
+
+
+def main():
+  try:
+    target = get_argument()
+
+    fuzzing(target["file"].read().split('\n'), target["host"])
+  except:
+    print("Programming, stoped...")
+
+
+main()
