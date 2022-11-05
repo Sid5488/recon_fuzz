@@ -10,9 +10,9 @@ def get_argument():
 
   for index, arg in enumerate(sys.argv):
     if arg == "-lf":
-      file = open(sys.argv[index + 1], "r")
+      path_file = open(sys.argv[index + 1], "r")
       
-      target_data["file"] = file
+      target_data["file"] = path_file
     
     if arg == "-t":
       target = sys.argv[index + 1]
@@ -31,9 +31,9 @@ def request_fuzzing(file, host):
       response_length = len(request.text)
 
       if request.status_code == 200 and response_length > 0:
-        message = "File found! " + item
+        message = f"File found! {item}"
       if request.status_code == 403 and response_length > 0:
-        message = "File found, but you hasn't permission! " + item
+        message = f"File found, but you hasn't permission! {item}"
       else:
         message = "Not found!"
 
@@ -50,7 +50,7 @@ def main():
     target = get_argument()
 
     fuzzing(target["file"].read().split('\n'), target["host"])
-  except:
+  except IOError:
     print("Programming, stoped...")
 
 
